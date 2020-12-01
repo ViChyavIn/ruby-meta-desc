@@ -25,6 +25,10 @@ module Rack
         end
 
         html = Nokogiri::HTML(body[0])
+
+        head = html.css('head').first
+        return response if head.nil?
+
         content = get_content(html)
 
         if content.nil?
@@ -35,9 +39,8 @@ module Rack
           description = content.content
         end
 
-        head = html.css('head').first
-
         meta = "<meta name=\"description\" content=\"#{description}\">"
+
         head.add_next_sibling(meta)
 
         body[0] = html.to_html
