@@ -9,6 +9,7 @@ Gem::Specification.new do |spec|
   spec.authors       = ['Nikita Ivanov']
 
   spec.summary       = "#{spec.name}-#{spec.version}"
+  spec.homepage      = 'https://github.com/ViChyavIn/ruby-meta-desk'
   spec.license       = 'MIT'
   spec.required_ruby_version = '>= 2.0.0'
 
