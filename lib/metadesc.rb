@@ -17,6 +17,8 @@ module Rack
       end
 
       def call(env)
+
+        request = ::Rack::Request.new(env)
         response = @app.call(env)
         status, headers, body = response
 
@@ -39,7 +41,22 @@ module Rack
           description = content.content
         end
 
-        meta = "<meta name=\"description\" content=\"#{description}\">"
+        meta = <<-END.gsub(/^\s+\|/, '')
+          |<meta name="description" content="#{description}" />
+          |<meta property="og:description" content="#{description}" />
+          |<meta property="og:url" content="#{request.url}" />
+          |<meta name="theme-color" content="#3498DB">
+          |<meta property="og:type" content="website" />
+          |<meta name="twitter:card" content="summary_large_image">
+        END
+
+        if (image = html.css('img').first) && ! image.nil?
+          meta += %{<meta property="og:image" content="#{request.base_url + image['src']}" />}
+        end
+
+        if title = html.css('title').first        
+          meta += %{<meta property="og:title" content="#{title.content}" />} if !title.nil? && !title.content.empty?
+        end
 
         head.add_next_sibling(meta)
 
