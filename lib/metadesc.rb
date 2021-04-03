@@ -10,10 +10,11 @@ module Rack
 
     class App
 
-      def initialize(app, rule = 'p', fallback_description = nil)
+      def initialize(app, rules = {}, fallback_description = nil, site_name = nil)
         @app = app
-        @rule = rule
+        @rules = {title: 'title', description: 'p'}.merge rules
         @fallback_description = fallback_description
+        @site_name = site_name
       end
 
       def call(env)
@@ -31,7 +32,7 @@ module Rack
         head = html.css('head').first
         return response if head.nil?
 
-        content = get_content(html)
+        content = get_description(html)
 
         if content.nil?
           return response if @fallback_description.nil?
@@ -54,8 +55,13 @@ module Rack
           meta += %{<meta property="og:image" content="#{request.base_url + image['src']}" />}
         end
 
-        if title = html.css('title').first        
-          meta += %{<meta property="og:title" content="#{title.content}" />} if !title.nil? && !title.content.empty?
+        
+        if title = get_title(html)
+          meta += %{<meta name="og:title" content="#{title}" />} if !title.nil? && !title.empty?
+        end
+        
+        unless @site_name.nil?
+          meta += %{<meta name="og:site_name" content="#{@site_name}" />}
         end
 
         head.add_next_sibling(meta)
@@ -72,8 +78,15 @@ module Rack
         !!(headers['Content-Type'] =~ /text\s*\/\s*html\s*(?:;|$)/)
       end
 
-      def get_content(html)
-        html.css(@rule).first
+      def get_description(html)
+        html.css(@rules[:description]).first
+      end
+
+      def get_title(html)
+        title = html.css(@rules[:title]).first
+        return nil if title.nil?
+
+        title.content
       end
 
       def get_length(html)
