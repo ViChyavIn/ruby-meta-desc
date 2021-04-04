@@ -52,7 +52,9 @@ module Rack
         END
 
         if (image = html.css('img').first) && ! image.nil?
-          meta += %{<meta property="og:image" content="#{request.base_url + image['src']}" />}
+          if request.base_url && image['src']
+            meta += %{<meta property="og:image" content="#{request.base_url + image['src']}" />}
+          end
         end
 
         
